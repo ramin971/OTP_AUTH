@@ -33,7 +33,7 @@ from .models import User
 class RegisterAPIView(APIView):
     throttle_classes = [RegisterRateThrottle]
     @extend_schema(
-        tags=['Authentication'],
+        tags=['OTP'],
         summary="ثبت‌نام کاربر جدید",
         description="""
         مرحله اول ثبت‌نام: ارسال کد OTP به شماره موبایل.
@@ -103,7 +103,7 @@ class LoginAPIView(APIView):
     throttle_classes = [LoginRateThrottle]
 
     @extend_schema(
-        tags=['Authentication'],
+        tags=['OTP'],
         summary="ورود کاربر",
         description="""
         احراز هویت کاربر با شماره موبایل و رمز عبور.
@@ -200,7 +200,7 @@ class LoginAPIView(APIView):
 class OTPVerificationView(APIView):
     throttle_classes = [OTPRateThrottle]
     @extend_schema(
-        tags=['Authentication'],
+        tags=['OTP'],
         summary="تأیید کد OTP",
         description="""
         تأیید کد یکبار مصرف ارسال شده به موبایل کاربر.
@@ -283,14 +283,14 @@ class OTPVerificationView(APIView):
                 {'error': 'Invalid OTP code'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-# ######################################3
+
 
 class UserCustomViewSet(mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
-                        mixins.UpdateModelMixin,
-                        mixins.DeleteModelMixin,
+                        mixins.DestroyModelMixin,
                         viewsets.GenericViewSet):
     
+    # http_method_names = ['get', 'post', 'delete', 'head', 'options']
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = CustomPagination
@@ -320,7 +320,7 @@ class UserCustomViewSet(mixins.ListModelMixin,
             user.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         
-    @action(detail=False , methods=['put'],permission_classes=[IsAuthenticated])
+    @action(detail=False , methods=['put'],permission_classes=[IsAuthenticated]) # change url_path by set  url_path='me/change-pass'
     def change_password(self,request):
         serializer = ChangePasswordSerializer(data=request.data,context={'user':request.user})
         serializer.is_valid(raise_exception=True)
