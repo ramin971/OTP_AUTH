@@ -1,6 +1,5 @@
 import random
 from datetime import timedelta
-from django.core.cache import cache
 from django.utils import timezone
 from django.conf import settings
 from .models import OTPCode, FailedAttempt

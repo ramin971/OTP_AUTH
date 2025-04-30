@@ -6,6 +6,7 @@ from django.core.validators import RegexValidator,MinLengthValidator
 from django.conf import settings
 
 
+
 class User(AbstractUser):
     phone = models.CharField(max_length=11, unique=True,\
                              validators=[RegexValidator(regex='^09\d{9}$'\

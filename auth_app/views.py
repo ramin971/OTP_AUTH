@@ -1,6 +1,8 @@
+from rest_framework import status,mixins,viewsets
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
@@ -14,11 +16,14 @@ from drf_spectacular.utils import (
     OpenApiResponse,
     # OpenApiParameter
     )
+from .paginations import CustomPagination
 from .services import OTPService
 from .serializers import (
     LoginSerializer,
     RegisterSerializer,
     VerifyOTPSerializer,
+    UserSerializer,
+    ChangePasswordSerializer
     )
 from .throttles import RegisterRateThrottle, LoginRateThrottle, OTPRateThrottle
 from .models import User
@@ -278,6 +283,51 @@ class OTPVerificationView(APIView):
                 {'error': 'Invalid OTP code'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+# ######################################3
+
+class UserCustomViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.DeleteModelMixin,
+                        viewsets.GenericViewSet):
+    
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    pagination_class = CustomPagination
+    permission_classes =[IsAdminUser]
+
+        # if create customer beside user    ################
+        # elif self.action == 'create':
+        #     return UserCreateSerializer
+        # else:
+        #     return UserSerializer
+        
+
+    @action(detail=False , methods=['get','patch','delete'],permission_classes=[IsAuthenticated])
+    def me(self,request):
+        user = request.user
+        if request.method == 'GET':
+            serializer = UserSerializer(user)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+
+        elif request.method == 'PATCH':
+            serializer = UserSerializer(user,data=request.data,partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_205_RESET_CONTENT)
+
+        elif request.method == 'DELETE':
+            user.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        
+    @action(detail=False , methods=['put'],permission_classes=[IsAuthenticated])
+    def change_password(self,request):
+        serializer = ChangePasswordSerializer(data=request.data,context={'user':request.user})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Password changed successfully'},status=status.HTTP_205_RESET_CONTENT)
+
+
 
 
 # class ResendOTPAPIView(APIView):
