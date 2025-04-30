@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
+from .models import User,FailedAttempt
 # from core.models import Customer
 
 
@@ -35,3 +35,9 @@ class UserAdmin(BaseUserAdmin):
     list_display = ('phone', 'email', 'first_name', 'last_name', 'is_staff')
     search_fields = ('phone', 'first_name', 'last_name',)
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'is_verified', 'groups')
+
+
+@admin.register(FailedAttempt)
+class FaildAttemptAdmin(admin.ModelAdmin):
+    list_display = ['id','ip_address','phone','attempt_type','created_at']
+    search_fields = ['phone']
