@@ -87,10 +87,10 @@ class RegisterAPIView(APIView):
         #         status=status.HTTP_429_TOO_MANY_REQUESTS
         #     )
         
-
+        order = 'auth-register'
         # Generate and send OTP
-        code = OTPService.generate_otp(phone)
-
+        OTPService.generate_otp(phone,order)
+        # print(f'###############code:{code}#############')
 
         return Response({
             'message': 'User registered. OTP sent successfully',
@@ -172,13 +172,14 @@ class LoginAPIView(APIView):
         user = authenticate(request, phone=phone, password=password)
         
         if user is not None:
+            order = 'auth-login'
             # Generate and send OTP
-            OTPService.generate_otp(phone)
+            OTPService.generate_otp(phone, order)
+            # print(f'########{code}########')
 
-
-            return Response({
-                'message': 'OTP sent to your phone'
-            })
+            return Response(
+                {'message': 'OTP sent to your phone'},
+                status=status.HTTP_200_OK)
 
         else:
             if not User.objects.filter(phone=phone).exists():
@@ -397,7 +398,7 @@ class UserCustomViewSet(mixins.ListModelMixin,
 #         #         {'error': 'Too many attempts. Try again later.'},
 #         #         status=status.HTTP_429_TOO_MANY_REQUESTS
 #         #     )
-        
+
 #         code = OTPService.generate_otp(phone)
 
 #         # Send OTP-Code to User's phone

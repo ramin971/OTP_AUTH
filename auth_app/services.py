@@ -2,12 +2,15 @@ import random
 from datetime import timedelta
 from django.utils import timezone
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from kavenegar import *
 from .models import OTPCode, FailedAttempt
+
 
 
 class OTPService:
     @staticmethod
-    def generate_otp(phone):
+    def generate_otp(phone, order):
         # Delete previous OTPs
         OTPCode.objects.filter(phone=phone).delete()
 
@@ -15,18 +18,40 @@ class OTPService:
         # code = str(random.randint(100000, 999999)) don't support code that start 0 like (042...6)
         code = ''.join(random.choices('0123456789', k=6))
         expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRE_MINUTES)
+        print(f'###############code:{code}#############')
         
         otp = OTPCode.objects.create(
             phone=phone,
             code=code,
             expires_at=expires_at
         )
-
+        
         # TODO: Integrate with SMS service (transaction.attomic)
-        # send_sms(phone, f"Your OTP code is: {code}")
+        # send OTP via sms
+        OTPService.send_sms(phone, code, order)
         
         return code
     
+
+    @staticmethod
+    def send_sms(phone_number, code, order):
+        try:
+            api = KavenegarAPI(settings.KAVENEGAR_API_KEY, timeout=20)
+            params = {
+                'receptor': phone_number,
+                'template': order,
+                'token': code,
+                'type': 'sms', #sms vs call
+            }
+            response = api.verify_lookup(params)
+            print(f'###{response}###')
+            return response
+        except APIException as e:
+            raise ValidationError(f"Error sending SMS: {str(e)}")
+        except HTTPException as e:
+            raise ValidationError(f"Error connecting to KAVENEGAR service: {str(e)}")
+
+
     @staticmethod
     def verify_otp(phone, code):
         otp = OTPCode.objects.filter(

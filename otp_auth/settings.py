@@ -169,6 +169,10 @@ FAILED_ATTEMPTS_LIMIT = 3
 ATTEMPTS_TIME_RANGE = 1 # HOURS
 OTP_EXPIRE_MINUTES = 5
 
+# KAVENEGAR SMS SERVICE
+KAVENEGAR_API_KEY = 'your api key'  
+# KAVENEGAR_SENDER = '2000660110' # it is a test sender
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'your project API',
     'DESCRIPTION': 'A simple login/registration system with the ability to limit suspicious requests + your project description',
