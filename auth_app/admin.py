@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils import timezone
+import jdatetime
 from .models import User,FailedAttempt
 # from core.models import Customer
 
@@ -39,5 +41,13 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(FailedAttempt)
 class FaildAttemptAdmin(admin.ModelAdmin):
-    list_display = ['id','ip_address','phone','attempt_type','created_at']
+    list_display = ['id','ip_address','phone','attempt_type','created','created_at']
     search_fields = ['phone']
+
+    def created(self,instance):
+        created = instance.created_at
+        local_time = timezone.localtime(created) # change local timezone in setting to convert time
+        # print(f'####local time:{local_time}')
+        converted_date = jdatetime.datetime.fromgregorian(datetime=local_time) # don't convert time. the solution is above the line.
+        # print(f'####converted_date:{converted_date}')
+        return converted_date.strftime("%Y-%m-%d %H:%M:%S")
