@@ -171,7 +171,6 @@ OTP_EXPIRE_MINUTES = 5
 
 # KAVENEGAR SMS SERVICE
 KAVENEGAR_API_KEY = 'your api key' 
-# KAVENEGAR_SENDER = '2000660110' # it is a test sender
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'your project API',

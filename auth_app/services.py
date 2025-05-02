@@ -18,7 +18,7 @@ class OTPService:
         # code = str(random.randint(100000, 999999)) don't support code that start 0 like (042...6)
         code = ''.join(random.choices('0123456789', k=6))
         expires_at = timezone.now() + timedelta(minutes=settings.OTP_EXPIRE_MINUTES)
-        print(f'###############code:{code}#############')
+        # print(f'###############code:{code}#############')
         
         otp = OTPCode.objects.create(
             phone=phone,
@@ -36,7 +36,7 @@ class OTPService:
     @staticmethod
     def send_sms(phone_number, code, order):
         try:
-            api = KavenegarAPI(settings.KAVENEGAR_API_KEY, timeout=20)
+            api = KavenegarAPI(settings.KAVENEGAR_API_KEY)
             params = {
                 'receptor': phone_number,
                 'template': order,
@@ -44,10 +44,11 @@ class OTPService:
                 'type': 'sms', #sms vs call
             }
             response = api.verify_lookup(params)
-            print(f'###{response}###')
+            # print(f'###{response}###')
             return response
         except APIException as e:
-            raise ValidationError(f"Error sending SMS: {str(e)}")
+            decoded_error = e.args[0].decode('utf-8')
+            raise ValidationError(f"Error sending SMS: {decoded_error}")
         except HTTPException as e:
             raise ValidationError(f"Error connecting to KAVENEGAR service: {str(e)}")
 
