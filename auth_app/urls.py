@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
-from .views import RegisterAPIView, LoginAPIView, OTPVerificationView, UserCustomViewSet
+from .views import RegisterAPIView, LoginAPIView,get_csrf_token,\
+                    OTPVerificationView, UserCustomViewSet
 
 
 
@@ -16,6 +17,7 @@ urlpatterns = [
     path('verify-otp/', OTPVerificationView.as_view(), name='verify-otp'),
     path('jwt/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('jwt/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('get-csrf-token/', get_csrf_token, name='get-csrf-token'),
     # path('resend-otp/', ResendOTPAPIView.as_view(), name='resend-otp'),
 
 ]

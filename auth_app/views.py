@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect , ensure_csrf_cookie
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.conf import settings
@@ -28,7 +28,9 @@ from .serializers import (
 from .throttles import RegisterRateThrottle, LoginRateThrottle, OTPRateThrottle
 from .models import User
 
-
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return Response({'detail': 'CSRF cookie set'},status=status.HTTP_200_OK)
 
 class RegisterAPIView(APIView):
     throttle_classes = [RegisterRateThrottle]
@@ -146,7 +148,7 @@ class LoginAPIView(APIView):
         # ]
     )
 
-    @method_decorator(csrf_protect)
+    # @method_decorator(csrf_protect)  لازم نداره چون تغییری در یوزر و احراز هویت ایجاد نمیکنه
     def post(self, request):
 
         serializer = LoginSerializer(data=request.data)
@@ -235,6 +237,9 @@ class OTPVerificationView(APIView):
             ),
         ]
     )    
+    # چون کاربر برای درخواست به این ویو  احراز هویت نیمخواهد ولی دیتا حساس دارد و در یوزر تغییر ایجاد میکند csrf-protect باید باشد.
+    # برای دیتا حساس مثل تایید  این کد  و دیتا های مالی باید از این csrf_protect استفاده کرد
+    # در صورت استفاده از jwt authentication به این csrf_protect نیازی ندارید
     @method_decorator(csrf_protect)
     def post(self, request):
         serializer = VerifyOTPSerializer(data=request.data)

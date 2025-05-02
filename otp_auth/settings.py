@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_spectacular',
+    'corsheaders',
     'auth_app'
 ]
 
@@ -80,6 +81,7 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -172,7 +174,7 @@ ATTEMPTS_TIME_RANGE = 1 # HOURS
 OTP_EXPIRE_MINUTES = 5
 
 # KAVENEGAR SMS SERVICE
-KAVENEGAR_API_KEY = 'your api code' 
+KAVENEGAR_API_KEY = 'your api key' 
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'your project API',
@@ -195,3 +197,47 @@ SPECTACULAR_SETTINGS = {
         }
     },
 }
+#  if use csrf_protect
+# اجازه دادن به دامنه‌های خاص برای ارسال درخواست
+CORS_ALLOWED_ORIGINS = [
+    "https://frontend-domain.com",
+    "http://localhost:3000",  # برای توسعه
+]
+
+# اجازه ارسال کوکی‌ها بین دامنه‌ها
+CORS_ALLOW_CREDENTIALS = True
+
+# دامنه‌های مورد اعتماد برای CSRF
+CSRF_TRUSTED_ORIGINS = [
+    "https://frontend-domain.com",
+    "http://localhost:3000",
+]
+
+# تنظیمات کوکی CSRF
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = False  # باید False باشد تا جاوااسکریپت بتواند بخواند
+CSRF_COOKIE_SECURE = True  # در production باید True باشد
+
+
+
+#########################################  front-end setting for CSRF  #######################################################################
+
+# axios.defaults.xsrfCookieName = 'csrftoken';
+# axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+# axios.defaults.withCredentials = true;
+
+# // دریافت اولیه CSRF token
+# await axios.get('https://api.example.com/get-csrf/', { withCredentials: true });
+
+# // ارسال درخواست OTP با CSRF token
+# const csrfToken = document.cookie.split('; ')
+#   .find(row => row.startsWith('csrftoken='))
+#   ?.split('=')[1];
+
+# await axios.post('https://api.example.com/request-otp/', 
+#   { phone: '09123456789' },
+#   {
+#     headers: { 'X-CSRFToken': csrfToken },
+#     withCredentials: true
+#   }
+# );
