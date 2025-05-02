@@ -1,0 +1,39 @@
+version: '3.10'
+
+
+services:
+
+  web:
+    build:
+      context: .
+    command: gunicorn otp_auth.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - static_data:/home/app/web/static
+    expose:
+      - 8000
+    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:rw
+    env_file:
+      - ./.env
+
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_data:/home/app/web/static
+    ports:
+      - "8000:80"
+    depends_on:
+      - web
+volumes:
+  static_data:
+  postgres_data:
