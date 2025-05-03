@@ -29,9 +29,9 @@ RUN chown -R app:app /home/app/web/entrypoint.sh
 RUN chmod +x /home/app/web/entrypoint.sh
 
 
-COPY . .
+COPY --chown=app:app . .
 
-RUN chown -R app:app /home/app/web
+#RUN chown -R app:app /home/app/web
 USER app
 
 ENTRYPOINT ["/home/app/web/entrypoint.sh"]
