@@ -17,6 +17,10 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# باید python-dotenv نصب شود تا در محیط خارج از داکر به متغیر های env دسترسی داشته باشد
+# if os.path.exists(BASE_DIR / '.env'):
+#     from dotenv import load_dotenv
+#     load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -183,6 +187,10 @@ AUTH_USER_MODEL = 'auth_app.User'
 FAILED_ATTEMPTS_LIMIT = 3
 ATTEMPTS_TIME_RANGE = 1 # HOURS
 OTP_EXPIRE_MINUTES = 5
+
+# NGINX 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # KAVENEGAR SMS SERVICE
 KAVENEGAR_API_KEY = os.getenv('KAVENEGAR_API_KEY')

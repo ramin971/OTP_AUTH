@@ -11,27 +11,33 @@ services:
       - static_data:/home/app/web/static
     expose:
       - 8000
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15-alpine
-    restart: always
+    restart: unless-stopped
     volumes:
-      - postgres_data:/var/lib/postgresql/data:rw
+      - postgres_data:/var/lib/postgresql/data
     env_file:
       - ./.env
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   nginx:
     build: ./nginx
+    restart: unless-stopped
     volumes:
       - static_data:/home/app/web/static
     ports:
-      - "8000:80"
+      - "80:80"
     depends_on:
       - web
 volumes:
