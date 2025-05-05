@@ -1,37 +1,55 @@
+
+# ==============================================
+# Stage 1: Builder برای نصب dependencies
+# ==============================================
+FROM python:3.11-alpine as builder
+
+WORKDIR /build
+
+# فقط ابزارهای ضروری برای کامپایل برخی پکیج‌های پایتون
+RUN apk add --no-cache --virtual .build-deps \
+    gcc \
+    python3-dev \
+    musl-dev 
+    # linux-headers       #required for pillow & psycop2(not psycop2-binary)
+
+COPY requirements.txt .
+
+# نصب با بهینه‌سازی حداکثری
+RUN pip install --user --no-cache-dir -r requirements.txt
+    #&& apk del .build-deps  # حذف بسته‌های کامپایل پس از نصب
+
+
+# ==============================================
+# Stage 2: Runtime image نهایی
+# ==============================================
 FROM python:3.11-alpine
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# ایجاد کاربر غیر root
+RUN addgroup -S appgroup && \
+    adduser -S appuser -G appgroup && \
+    mkdir -p /app && \
+    chown appuser:appgroup /app
 
-RUN addgroup app && adduser -S -G app app
+WORKDIR /app
 
-WORKDIR /home/app/web
+# کپی dependencies از stage builder
+COPY --from=builder --chown=appuser:appgroup /root/.local /home/appuser/.local
 
-RUN pip install --upgrade pip
+# کپی entrypoint و تنظیم دسترسی‌ها
+COPY --chown=appuser:appgroup entrypoint.sh /app/
+RUN sed -i 's/\r$//g' /app/entrypoint.sh && \
+    chmod +x /app/entrypoint.sh
 
-RUN apk update \
-    && apk add postgresql-dev gcc python3-dev musl-dev linux-headers
+# کپی فایل‌های پروژه
+COPY --chown=appuser:appgroup . .
 
-COPY ./requirements.txt .
-RUN pip install -r requirements.txt
-RUN  pip install psycopg2 && pip install gunicorn
+# تنظیم متغیرهای محیطی
+ENV PATH="/home/appuser/.local/bin:${PATH}" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
 
+USER appuser
 
-#media files
-# RUN mkdir /home/app/web/media
-RUN mkdir /home/app/web/static
-# RUN chown -R app:app ./media
-RUN chown -R app:app ./static
-# copy entrypoint.sh
-COPY ./entrypoint.sh .
-RUN sed -i 's/\r$//g' /home/app/web/entrypoint.sh
-RUN chown -R app:app /home/app/web/entrypoint.sh
-RUN chmod +x /home/app/web/entrypoint.sh
-
-
-COPY --chown=app:app . .
-
-#RUN chown -R app:app /home/app/web
-USER app
-
-ENTRYPOINT ["/home/app/web/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
