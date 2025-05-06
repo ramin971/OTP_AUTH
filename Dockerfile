@@ -16,8 +16,9 @@ RUN apk add --no-cache --virtual .build-deps \
 COPY requirements.txt .
 
 # نصب با بهینه‌سازی حداکثری
-RUN pip install --user --no-cache-dir -r requirements.txt
-    #&& apk del .build-deps  # حذف بسته‌های کامپایل پس از نصب
+RUN pip install --user --no-cache-dir -r requirements.txt \
+    && apk del .build-deps 
+# حذف بسته‌های کامپایل پس از نصب
 
 
 # ==============================================
@@ -28,8 +29,8 @@ FROM python:3.11-alpine
 # ایجاد کاربر غیر root
 RUN addgroup -S appgroup && \
     adduser -S appuser -G appgroup && \
-    mkdir -p /app && \
-    chown appuser:appgroup /app
+    mkdir -p /app/static && \
+    chown -R appuser:appgroup /app
 
 WORKDIR /app
 
